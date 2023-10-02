@@ -1,0 +1,575 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     23935,        567]
+NotebookOptionsPosition[     23385,        551]
+NotebookOutlinePosition[     23786,        567]
+CellTagsIndexPosition[     23743,        564]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "Start", " ", "of", " ", "Helper", " ", "Function", " ", "Definitions"}], 
+   "*)"}], 
+  RowBox[{"(*", 
+   RowBox[{
+    RowBox[{"Define", "'"}], 
+    RowBox[{"reverseBlend", "'"}], " ", "function", " ", "to", " ", "manage", 
+    " ", "blending", " ", "of", " ", "images", " ", "with", " ", "a", " ", 
+    "specific", " ", "background", " ", "color"}], "*)"}], 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"reverseBlend", "[", 
+      RowBox[{"img_Image", ",", "alpha_Image", ",", "bgcolor_"}], "]"}], ":=", 
+     RowBox[{"With", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"c", "=", 
+          RowBox[{"ImageData", "[", "img", "]"}]}], ",", 
+         RowBox[{"a", "=", 
+          RowBox[{
+           RowBox[{"ImageData", "[", "alpha", "]"}], "+", "0.0001"}]}], ",", 
+         RowBox[{"(*", 
+          RowBox[{
+          "Minimize", " ", "ComplexInfinitys", " ", "to", " ", "enhance", " ",
+            "performance"}], "*)"}], 
+         RowBox[{"bc", "=", "bgcolor"}]}], "}"}], ",", 
+       RowBox[{"(*", 
+        RowBox[{
+         RowBox[{
+         "Return", " ", "an", " ", "image", " ", "after", " ", "performing", 
+          " ", "blending", " ", "operation"}], ",", 
+         RowBox[{"handling", " ", "potential", " ", "indeterminacies"}]}], 
+        "*)"}], 
+       RowBox[{"ImageClip", "@", 
+        RowBox[{"Image", "[", 
+         RowBox[{
+          RowBox[{"Quiet", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"c", "-", 
+               RowBox[{"bc", " ", 
+                RowBox[{"(", 
+                 RowBox[{"1", "-", "a"}], ")"}]}]}], ")"}], "/", "a"}], ",", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"Power", "::", "infy"}], ",", 
+              RowBox[{"Infinity", "::", "indet"}]}], "}"}]}], "]"}], "/.", 
+          " ", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"ComplexInfinity", "->", "0"}], ",", 
+            RowBox[{"Indeterminate", "->", "0"}]}], "}"}]}], "]"}]}]}], 
+      "]"}]}], ";"}], "\n", "\[IndentingNewLine]", 
+   RowBox[{"(*", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"Define", "'"}], 
+      RowBox[{"isEmptyImage", "'"}], " ", "to", " ", "check", " ", "if", " ", 
+      "the", " ", "given", " ", "image", " ", "is", " ", "empty"}], ",", 
+     RowBox[{"based", " ", "on", " ", "its", " ", "alpha", " ", "channel"}]}],
+     "*)"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"isEmptyImage", "[", "img_Image", "]"}], ":=", 
+     RowBox[{"(*", 
+      RowBox[{
+       RowBox[{
+       "Return", " ", "True", " ", "if", " ", "all", " ", "alpha", " ", 
+        "channel", " ", "values", " ", "are", " ", "0"}], ",", 
+       RowBox[{"indicating", " ", "an", " ", "empty", " ", "image"}]}], 
+      "*)"}], 
+     RowBox[{"AllTrue", "[", 
+      RowBox[{
+       RowBox[{"Flatten", "[", 
+        RowBox[{"ImageData", "[", 
+         RowBox[{"AlphaChannel", "[", "img", "]"}], "]"}], "]"}], ",", 
+       RowBox[{
+        RowBox[{"#", "==", "0"}], "&"}]}], "]"}]}], ";"}], "\n", 
+   "\[IndentingNewLine]", 
+   RowBox[{"(*", 
+    RowBox[{
+    "End", " ", "of", " ", "Helper", " ", "Function", " ", "Definitions"}], 
+    "*)"}], "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.905233790680662*^9, 3.9052337918064713`*^9}, {
+   3.9052344022584743`*^9, 3.905234418098154*^9}, 
+   3.9052346213507442`*^9},ExpressionUUID->"d50e2f89-a0df-4c73-b2bc-\
+feb19ac659d6"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "Define", " ", "the", " ", "main", " ", "image", " ", "processing", " ", 
+    "and", " ", "export", " ", "function"}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"processAndExportImage", "[", "imagePath_", "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "processedImage", ",", "relativePath", ",", "outputPath", ",", 
+       "outputDirectory", ",", "img", ",", "dim", ",", "m", ",", "alph", ",", 
+       "alph2", ",", "resizedImage", ",", "colorNegatedImage", ",", 
+       "threshold", ",", "binaryImage", ",", "negatedBinaryImage", ",", 
+       "minSizeCorrection", ",", "bigmask", ",", "mask", ",", "edgemask", ",",
+        "alpha", ",", "domC", ",", "alphaDetail", ",", "result", ",", 
+       "labeled", ",", "measurements", ",", "areas", ",", 
+       "largestComponentsIndices", ",", "smoothedmask", ",", "result2"}], 
+      "}"}], ",", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{"(*", 
+      RowBox[{
+      "Import", " ", "the", " ", "image", " ", "from", " ", "the", " ", 
+       "given", " ", "path"}], "*)"}], "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"img", "=", 
+       RowBox[{"Import", "[", "imagePath", "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{
+       "Obtain", " ", "the", " ", "dimensions", " ", "of", " ", "the", " ", 
+        "imported", " ", "image"}], "*)"}], "\[IndentingNewLine]", 
+      RowBox[{"dim", "=", 
+       RowBox[{"ImageDimensions", "[", "img", "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{
+        RowBox[{
+        "Check", " ", "the", " ", "width", " ", "of", " ", "the", " ", 
+         "image"}], ",", " ", 
+        RowBox[{
+        "return", " ", "if", " ", "width", " ", "is", " ", "less", " ", 
+         "than", " ", "n", " ", "pixels"}]}], "*)"}], "\[IndentingNewLine]", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"dim", "[", 
+          RowBox[{"[", "1", "]"}], "]"}], "<", "500"}], ",", 
+        RowBox[{"Return", "[", "]"}]}], " ", 
+       RowBox[{"(*", 
+        RowBox[{
+        "Exit", " ", "the", " ", "function", " ", "if", " ", "width", " ", 
+         "is", " ", "less", " ", "than", " ", "500", " ", "pixels"}], "*)"}], 
+       "]"}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{
+       "Start", " ", "of", " ", "the", " ", "main", " ", "image", " ", 
+        "processing", " ", "block"}], "*)"}], "\[IndentingNewLine]", 
+      RowBox[{"Try", "[", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+       RowBox[{"(*", 
+        RowBox[{"Start", " ", "of", " ", "Block", " ", "1"}], "*)"}], 
+       "\[IndentingNewLine]", 
+       RowBox[{"(*", 
+        RowBox[{
+        "Compute", " ", "and", " ", "process", " ", "morphological", " ", 
+         "components", " ", "of", " ", "binarized", " ", "image"}], "*)"}], 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"m", "=", 
+         RowBox[{"MorphologicalComponents", "[", 
+          RowBox[{"Binarize", "[", 
+           RowBox[{"img", ",", 
+            RowBox[{"{", 
+             RowBox[{"0", ",", ".7"}], "}"}]}], "]"}], "]"}]}], ";", 
+        RowBox[{"alph", "=", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"SelectComponents", "[", 
+            RowBox[{"m", ",", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"#Count", "<", "50000"}], "&&", 
+               RowBox[{"#AdjacentBorderCount", "==", "0"}]}], "&"}]}], "]"}], 
+           "//", "Image"}], "//", "ColorNegate"}]}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{"Refine", " ", "and", " ", "color"}], "-", 
+          RowBox[{
+          "adjust", " ", "the", " ", "selected", " ", "components"}]}], 
+         "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"alph", "=", 
+         RowBox[{"Erosion", "[", 
+          RowBox[{"alph", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"alph2", "=", 
+         RowBox[{"ColorReplace", "[", 
+          RowBox[{"alph", ",", 
+           RowBox[{"Black", "->", 
+            RowBox[{
+             RowBox[{"DominantColors", "[", 
+              RowBox[{"img", ",", "1"}], "]"}], "[", 
+             RowBox[{"[", "1", "]"}], "]"}]}]}], "]"}]}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Compose", " ", "images", " ", "and", " ", "remove", " ", "the", " ",
+           "alpha", " ", "channel", " ", "for", " ", "the", " ", "final", " ",
+           "processed", " ", 
+          RowBox[{"image", "'"}], 
+          RowBox[{"i", "'"}]}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"i", "=", 
+         RowBox[{"RemoveAlphaChannel", "[", 
+          RowBox[{"ImageCompose", "[", 
+           RowBox[{"img", ",", 
+            RowBox[{"ColorReplace", "[", 
+             RowBox[{"alph2", ",", 
+              RowBox[{"White", "->", "Transparent"}], ",", ".01"}], "]"}]}], 
+           "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"Clear", "[", 
+         RowBox[{"m", ",", "alph", ",", "alph2"}], "]"}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"End", " ", "of", " ", "Block", " ", "1"}], "*)"}], 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"Start", " ", "of", " ", "Block", " ", "2"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Resize", " ", "and", " ", "color", " ", "negate", " ", "the", " ", 
+          "image"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"resizedImage", "=", 
+         RowBox[{"ImageResize", "[", 
+          RowBox[{"i", ",", 
+           RowBox[{"4", " ", "dim"}]}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"colorNegatedImage", "=", 
+         RowBox[{"ColorNegate", "@", "resizedImage"}]}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Apply", " ", "Morphological", " ", "Binarization", " ", "and", " ", 
+          "further", " ", "negate", " ", "the", " ", "color"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"threshold", "=", "0.5"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"binaryImage", "=", 
+         RowBox[{"MorphologicalBinarize", "[", 
+          RowBox[{"colorNegatedImage", ",", "threshold"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"Clear", "[", 
+         RowBox[{"resizedImage", ",", "colorNegatedImage"}], "]"}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"negatedBinaryImage", "=", 
+         RowBox[{"ColorNegate", "@", "binaryImage"}]}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Delete", " ", "small", " ", "components", " ", "and", " ", 
+          "prepare", " ", "masks"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"minSizeCorrection", "=", "0.01"}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"bigmask", "=", 
+         RowBox[{"DeleteSmallComponents", "[", 
+          RowBox[{"negatedBinaryImage", ",", 
+           RowBox[{"Round", "[", 
+            RowBox[{"minSizeCorrection", " ", 
+             RowBox[{
+              RowBox[{"Times", "@@", "dim"}], "/", "5"}]}], "]"}]}], "]"}]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"mask", "=", 
+         RowBox[{"ColorNegate", "@", 
+          RowBox[{"ImageResize", "[", 
+           RowBox[{
+            RowBox[{"ColorConvert", "[", 
+             RowBox[{"bigmask", ",", "\"\<GrayScale\>\""}], "]"}], ",", 
+            "dim"}], "]"}]}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"edgemask", "=", 
+         RowBox[{"ImageResize", "[", 
+          RowBox[{
+           RowBox[{"ImageAdjust", "@", 
+            RowBox[{"DistanceTransform", "@", 
+             RowBox[{"Dilation", "[", 
+              RowBox[{
+               RowBox[{"EdgeDetect", "[", 
+                RowBox[{"bigmask", ",", "2"}], "]"}], ",", "6"}], "]"}]}]}], 
+           ",", "dim"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"Clear", "[", "bigmask", "]"}], ";", "\[IndentingNewLine]", 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Calculate", " ", "alpha", " ", "for", " ", "detailed", " ", 
+          "component", " ", "processing"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"alpha", "=", 
+         RowBox[{"ImageAdd", "[", 
+          RowBox[{
+           RowBox[{"ImageSubtract", "[", 
+            RowBox[{
+             RowBox[{"ImageMultiply", "[", 
+              RowBox[{
+               RowBox[{"ColorNegate", "@", 
+                RowBox[{"ColorConvert", "[", 
+                 RowBox[{"i", ",", "\"\<GrayScale\>\""}], "]"}]}], ",", 
+               "edgemask"}], "]"}], ",", 
+             RowBox[{"ImageMultiply", "[", 
+              RowBox[{"mask", ",", "edgemask"}], "]"}]}], "]"}], ",", 
+           "mask"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"domC", "=", 
+         RowBox[{"DominantColors", "[", 
+          RowBox[{"i", ",", "1"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"alphaDetail", "=", 
+         RowBox[{"ColorNegate", "[", 
+          RowBox[{"ColorDetect", "[", 
+           RowBox[{"i", ",", 
+            RowBox[{"ColorsNear", "[", 
+             RowBox[{
+              RowBox[{"domC", "[", 
+               RowBox[{"[", "1", "]"}], "]"}], ",", ".1"}], "]"}]}], "]"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"alpha", "=", 
+         RowBox[{"RemoveAlphaChannel", "[", 
+          RowBox[{"ImageCompose", "[", 
+           RowBox[{"alpha", ",", 
+            RowBox[{"ColorReplace", "[", 
+             RowBox[{"alphaDetail", ",", 
+              RowBox[{"White", "\[Rule]", "Transparent"}]}], "]"}]}], "]"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"alpha", "=", 
+         RowBox[{"DeleteBorderComponents", "[", "alpha", "]"}]}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Finalize", " ", "the", " ", "result", " ", "with", " ", "a", " ", 
+          "specific", " ", "alpha", " ", "channel"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"result", "=", 
+         RowBox[{"SetAlphaChannel", "[", 
+          RowBox[{
+           RowBox[{"reverseBlend", "[", 
+            RowBox[{"i", ",", "alpha", ",", "1"}], "]"}], ",", "alpha"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"End", " ", "of", " ", "Block", " ", "2"}], "*)"}], 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"Start", " ", "of", " ", "Block", " ", "3."}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"Binarize", " ", "the", " ", "image"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"binaryImage", "=", 
+         RowBox[{"Binarize", "[", "result", "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"smoothed", "=", 
+         RowBox[{"Closing", "[", 
+          RowBox[{"binaryImage", ",", 
+           RowBox[{"DiskMatrix", "[", "1", "]"}]}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"Clear", "[", 
+         RowBox[{
+         "binaryImage", ",", "result", ",", "alpha", ",", " ", "alphaDetail", 
+          ",", " ", "edgemask"}], "]"}], ";", "\[IndentingNewLine]", 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"Label", " ", "components"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"labeled", "=", 
+         RowBox[{"MorphologicalComponents", "[", "smoothed", "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"measurements", "=", 
+         RowBox[{"ComponentMeasurements", "[", 
+          RowBox[{"labeled", ",", "\"\<Area\>\""}], "]"}]}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Filter", " ", "out", " ", "components", " ", "based", " ", "on", 
+          " ", "a", " ", "set", " ", "area", " ", "threshold"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"threshold", "=", "100000"}], ";", "  ", 
+        RowBox[{"(*", 
+         RowBox[{"Define", " ", "the", " ", "area", " ", "threshold"}], 
+         "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"areas", "=", 
+         RowBox[{"Values", "[", "measurements", "]"}]}], ";", "  ", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Retrieve", " ", "the", " ", "areas", " ", "as", " ", "a", " ", 
+          "list"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"largestComponentsIndices", "=", 
+         RowBox[{"Pick", "[", 
+          RowBox[{
+           RowBox[{"Range", "[", 
+            RowBox[{"Length", "[", "areas", "]"}], "]"}], ",", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"#", ">", "threshold"}], "&"}], "/@", "areas"}]}], 
+          "]"}]}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Construct", " ", "a", " ", "mask", " ", "to", " ", "highlight", " ",
+           "the", " ", "largest", " ", "components"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"mask", "=", 
+         RowBox[{"Image", "[", 
+          RowBox[{"Map", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"If", "[", 
+              RowBox[{
+               RowBox[{"MemberQ", "[", 
+                RowBox[{"largestComponentsIndices", ",", "#"}], "]"}], ",", 
+               "1", ",", "0"}], "]"}], "&"}], ",", "labeled", ",", 
+            RowBox[{"{", "2", "}"}]}], "]"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"smoothedmask", "=", 
+         RowBox[{"Closing", "[", 
+          RowBox[{"mask", ",", 
+           RowBox[{"DiskMatrix", "[", "5", "]"}]}], "]"}]}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Utilize", " ", "the", " ", "mask", " ", "on", " ", "the", " ", 
+          "original", " ", "image", " ", "to", " ", "emphasize", " ", "the", 
+          " ", "largest", " ", "components"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"result2", "=", 
+         RowBox[{"SetAlphaChannel", "[", 
+          RowBox[{"img", ",", "smoothedmask"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"End", " ", "of", " ", "Block", " ", "3."}], "*)"}], 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Check", " ", "if", " ", "the", " ", "result", " ", "is", " ", "an", 
+          " ", "empty", " ", "image"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{"isEmptyImage", "[", "result2", "]"}], ",", 
+          RowBox[{"Return", "[", "]"}]}], "]"}], ";", "\[IndentingNewLine]", 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"Assign", " ", "the", " ", "processed", " ", "image"}], 
+         "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"processedImage", "=", "result2"}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Construct", " ", "the", " ", "output", " ", "paths", " ", "and", 
+          " ", "directories"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"relativePath", "=", 
+         RowBox[{"StringDrop", "[", 
+          RowBox[{"imagePath", ",", 
+           RowBox[{"StringLength", "[", "sourceDir", "]"}]}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"outputDirectory", "=", 
+         RowBox[{"FileNameJoin", "[", 
+          RowBox[{"{", 
+           RowBox[{"destDir", ",", 
+            RowBox[{"DirectoryName", "[", "relativePath", "]"}]}], "}"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{"!", 
+           RowBox[{"DirectoryQ", "[", "outputDirectory", "]"}]}], ",", 
+          RowBox[{"CreateDirectory", "[", 
+           RowBox[{"outputDirectory", ",", 
+            RowBox[{"CreateIntermediateDirectories", "->", "True"}]}], 
+           "]"}]}], "]"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"outputPath", "=", 
+         RowBox[{"FileNameJoin", "[", 
+          RowBox[{"{", 
+           RowBox[{"outputDirectory", ",", 
+            RowBox[{
+             RowBox[{"StringDrop", "[", 
+              RowBox[{
+               RowBox[{"FileNameTake", "[", "imagePath", "]"}], ",", 
+               RowBox[{"-", "4"}]}], "]"}], "<>", "\"\<.png\>\""}]}], "}"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"Export", " ", "the", " ", "processed", " ", "image"}], 
+         "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"Export", "[", 
+         RowBox[{"outputPath", ",", "processedImage", ",", "\"\<PNG\>\"", ",", 
+          RowBox[{"Background", "->", "None"}]}], "]"}], ";"}], 
+       "\[IndentingNewLine]", "\[IndentingNewLine]", "]"}]}]}], 
+    "\[IndentingNewLine]", "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.905227567158327*^9, 3.9052276402276917`*^9}, {
+   3.905227672045616*^9, 3.9052277308859816`*^9}, {3.905233368734811*^9, 
+   3.905233393980742*^9}, {3.905233465350659*^9, 3.9052334936842403`*^9}, {
+   3.905233592309675*^9, 3.905233898217535*^9}, {3.9052339537039237`*^9, 
+   3.905234039339814*^9}, {3.905234308182028*^9, 3.90523431936977*^9}, {
+   3.905234370084917*^9, 3.9052343849363832`*^9}, {3.905234443977417*^9, 
+   3.9052345556358213`*^9}, 
+   3.905234978348187*^9},ExpressionUUID->"60237674-a60f-44dc-a858-\
+840ade5ec9b2"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "Apply", " ", "the", " ", "main", " ", "function", " ", "to", " ", "all", 
+    " ", "images", " ", "in", " ", "the", " ", "source", " ", "directory"}], 
+   "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"sourceDir", "=", "\"\<\>\""}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{"destDir", "=", "\"\<\>\""}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{"imagePaths", "=", 
+     RowBox[{"FileNames", "[", 
+      RowBox[{"\"\<*\>\"", ",", "sourceDir", ",", "Infinity"}], "]"}]}], 
+    ";"}], "\n", 
+   RowBox[{
+    RowBox[{"imagePaths", "=", 
+     RowBox[{"Select", "[", 
+      RowBox[{"imagePaths", ",", 
+       RowBox[{"Not", "@*", "DirectoryQ"}]}], "]"}]}], ";"}], " ", 
+   RowBox[{"(*", 
+    RowBox[{"Select", " ", "only", " ", "files"}], "*)"}], 
+   "\[IndentingNewLine]", "\n", 
+   RowBox[{"(*", 
+    RowBox[{
+    "Launch", " ", "parallel", " ", "kernels", " ", "and", " ", "distribute", 
+     " ", "definitions"}], "*)"}], "\[IndentingNewLine]", 
+   RowBox[{"LaunchKernels", "[", "$ProcessorCount", "]"}], "\n", 
+   RowBox[{
+    RowBox[{"DistributeDefinitions", "[", 
+     RowBox[{"processAndExportImage", ",", "sourceDir", ",", "destDir"}], 
+     "]"}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"ParallelMap", "[", 
+     RowBox[{"processAndExportImage", ",", "imagePaths"}], "]"}], ";"}], "\n", 
+   RowBox[{"CloseKernels", "[", "]"}]}]}]], "Input",
+ CellChangeTimes->{
+  3.905234559038021*^9, {3.9052352414719296`*^9, 
+   3.9052352437964334`*^9}},ExpressionUUID->"e441f30b-783d-4fba-b33e-\
+8741bbc47df4"]
+},
+WindowSize->{1008, 740.5},
+WindowMargins->{{229, Automatic}, {Automatic, 67}},
+FrontEndVersion->"13.3 for Microsoft Windows (64-bit) (June 3, 2023)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"7f8f12e8-4f56-4b22-ba0d-1bda377e621f"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 3498, 92, 257, "Input",ExpressionUUID->"d50e2f89-a0df-4c73-b2bc-feb19ac659d6"],
+Cell[4059, 114, 17731, 392, 1989, "Input",ExpressionUUID->"60237674-a60f-44dc-a858-840ade5ec9b2"],
+Cell[21793, 508, 1588, 41, 219, "Input",ExpressionUUID->"e441f30b-783d-4fba-b33e-8741bbc47df4"]
+}
+]
+*)
+
