@@ -1,7 +1,7 @@
-# Exsiccatae Segment
+# Exsiccatum
 
 <div align="center"> 
-  <img src="https://github.com/admir-selimovic/exsiccatae-segment/blob/main/img/exsiccatae-segment.png" width="400">
+  <img src="https://github.com/admir-selimovic/exsiccatum/blob/main/img/exsiccatum.png" width="400">
 </div>
 
-A Computer Vision project in exsiccatae image segmentation and background removal.
+A Computer Vision project in exsiccatum image segmentation and background removal.
